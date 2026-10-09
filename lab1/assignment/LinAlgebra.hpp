@@ -5,6 +5,13 @@
 #include <initializer_list>
 #include <vector>
 
+// Count only scalar arithmetic (+, -, *, /), not indices or comparisons.
+struct Operations {
+    std::uint64_t add = 0, subtract = 0, multiply = 0, divide = 0;
+    std::uint64_t total() const { return add + subtract + multiply + divide; }
+};
+
+// Vector class representing a mathematical vector in R^n.
 class Vector {
 public:
     using size_type = std::size_t;
@@ -24,28 +31,23 @@ public:
     Vector& operator+=(const Vector& other);
     Vector& operator-=(const Vector& other);
     Vector& operator*=(double scalar);
-    Vector& operator/=(double scalar);
     double dot(const Vector& other) const;
 
 private:
     std::vector<double> values_;
 };
 
+// Free operators for vector-space operations.
+// They provide natural algebraic syntax and allow scalar-left forms (e.g., 3.0 * v).
 Vector operator+(const Vector& vector);
 Vector operator-(const Vector& vector);
 Vector operator+(const Vector& left, const Vector& right);
 Vector operator-(const Vector& left, const Vector& right);
 Vector operator*(const Vector& vector, double scalar);
 Vector operator*(double scalar, const Vector& vector);
-Vector operator/(const Vector& vector, double scalar);
 double operator*(const Vector& left, const Vector& right);
 
-// Count only scalar arithmetic (+, -, *, /), not indices or comparisons.
-struct Operations {
-    std::uint64_t add = 0, subtract = 0, multiply = 0, divide = 0;
-    std::uint64_t total() const { return add + subtract + multiply + divide; }
-};
-
+// Matrix class representing a mathematical matrix in R^(m x n).
 // Row-major storage: row i starts at i * cols.
 class Matrix {
 public:
@@ -65,15 +67,15 @@ public:
     Matrix& operator+=(const Matrix& other);
     Matrix& operator-=(const Matrix& other);
     Matrix& operator*=(double scalar);
-    Matrix& operator/=(double scalar);
 };
 
+// Free operators for matrix-space operations.
+// They provide natural algebraic syntax and allow scalar-left forms (e.g., 3.0 * A).
 Matrix operator+(const Matrix& matrix);
 Matrix operator-(const Matrix& matrix);
 Matrix operator+(const Matrix& left, const Matrix& right);
 Matrix operator-(const Matrix& left, const Matrix& right);
 Matrix operator*(const Matrix& matrix, double scalar);
 Matrix operator*(double scalar, const Matrix& matrix);
-Matrix operator/(const Matrix& matrix, double scalar);
 Vector operator*(const Matrix& matrix, const Vector& vector);
 Matrix operator*(const Matrix& left, const Matrix& right);

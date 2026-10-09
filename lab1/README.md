@@ -26,6 +26,8 @@ Required behavior:
 
 - Validate dimensions and indices.
 - Compute correct numerical results.
+- The provided tests include an algebraic-expression check based on a
+    truncated matrix exponential (e.g. `I + A + 0.5*A*A`) applied to a vector.
 
 ### Exercises 2 and 3: Linear system solver (`Solver`)
 
@@ -118,6 +120,7 @@ After code changes, rebuild and run again.
 
 A basic test suite is available under `tests/` for vector/matrix algebra and
 solver behavior.
+The tests are written with GoogleTest.
 
 Run tests against the assignment implementation:
 
@@ -207,3 +210,23 @@ Use this sequence every time you validate a change:
 9. Repeat with at least one edge-case dataset (incompatible dimensions,
     nearly singular system, or zero vector/right-hand side).
 10. Rebuild and retest after each code change.
+
+## 5) Academic integrity and AI use
+
+Using AI tools (LLMs, code assistants) as tutoring support is allowed.
+Submitting generated code or report text as your own work without disclosure is
+not allowed.
+
+Submission requirements:
+
+- If you used AI support, include a short `AI_USAGE.md` file in your zip.
+- In `AI_USAGE.md`, list: tool name, what it was used for, and the final prompts
+    that directly influenced your submitted code or report.
+- You must be able to explain and justify every submitted function and test.
+
+Evaluation note:
+
+- During review, the student will be asked for a brief explanation of selected
+    code fragments or test decisions.
+- If a submitted part cannot be explained by the student, that part will be
+    considered invalid for grading.

@@ -31,13 +31,25 @@ endif()
 
 option(LAB1_BUILD_TESTS "Build unit tests for the selected implementation" OFF)
 if(LAB1_BUILD_TESTS)
+    find_package(GTest CONFIG QUIET)
+    if(NOT GTest_FOUND)
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+        )
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(googletest)
+    endif()
+
     enable_testing()
     add_executable(lab1_tests
-        tests/main.cpp
         tests/TestLinearAlgebra.cpp
         tests/TestSolver.cpp)
-    target_link_libraries(lab1_tests PRIVATE labcore)
-    add_test(NAME lab1_tests COMMAND lab1_tests)
+    target_link_libraries(lab1_tests PRIVATE labcore GTest::gtest_main)
+
+    include(GoogleTest)
+    gtest_discover_tests(lab1_tests)
 endif()
 
 option(LAB1_BUILD_UI "Build the SDL3 / OpenGL / Dear ImGui interface" ON)

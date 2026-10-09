@@ -41,11 +41,6 @@ Vector& Vector::operator*=(double /*scalar*/) {
     throw std::logic_error("Pending: Vector::operator*=");
 }
 
-Vector& Vector::operator/=(double /*scalar*/) {
-    // TODO: scalar division (validate nonzero scalar).
-    throw std::logic_error("Pending: Vector::operator/=");
-}
-
 double Vector::dot(const Vector& /*other*/) const {
     // TODO: dot product with dimension validation.
     throw std::logic_error("Pending: Vector::dot");
@@ -79,11 +74,6 @@ Vector operator*(const Vector& /*vector*/, double /*scalar*/) {
 Vector operator*(double /*scalar*/, const Vector& /*vector*/) {
     // TODO: scalar-vector multiplication.
     throw std::logic_error("Pending: scalar * Vector");
-}
-
-Vector operator/(const Vector& /*vector*/, double /*scalar*/) {
-    // TODO: vector-scalar division.
-    throw std::logic_error("Pending: Vector / scalar");
 }
 
 double operator*(const Vector& /*left*/, const Vector& /*right*/) {
@@ -121,11 +111,6 @@ Matrix& Matrix::operator*=(double /*scalar*/) {
     throw std::logic_error("Pending: Matrix::operator*=");
 }
 
-Matrix& Matrix::operator/=(double /*scalar*/) {
-    // TODO: scalar division (validate nonzero scalar).
-    throw std::logic_error("Pending: Matrix::operator/=");
-}
-
 Matrix operator+(const Matrix& /*matrix*/) {
     // TODO: unary plus.
     throw std::logic_error("Pending: Matrix unary +");
@@ -154,11 +139,6 @@ Matrix operator*(const Matrix& /*matrix*/, double /*scalar*/) {
 Matrix operator*(double /*scalar*/, const Matrix& /*matrix*/) {
     // TODO: scalar-matrix multiplication.
     throw std::logic_error("Pending: scalar * Matrix");
-}
-
-Matrix operator/(const Matrix& /*matrix*/, double /*scalar*/) {
-    // TODO: matrix-scalar division.
-    throw std::logic_error("Pending: Matrix / scalar");
 }
 
 Vector operator*(const Matrix& /*matrix*/, const Vector& /*vector*/) {

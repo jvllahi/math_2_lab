@@ -1,0 +1,334 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+% \usepackage{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{verbatim}
+
+
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\renewcommand{\labelenumi}{(\alph{enumi})}
+
+\definecolor{ink}{gray}{0.10}
+\definecolor{mute}{gray}{0.40}
+\definecolor{hair}{gray}{0.75}
+\definecolor{panel}{gray}{0.94}
+
+\newcommand{\R}{\mathbb{R}}
+
+% ---- plain light-gray note/context box ----
+\newsavebox{\ctxboxsv}
+\newenvironment{ctxbox}[1]{%
+  \par\smallskip\noindent
+  \begin{lrbox}{\ctxboxsv}
+  \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+  \textbf{#1}\par\smallskip
+}{%
+  \end{minipage}
+  \end{lrbox}%
+  \noindent\colorbox{panel}{\usebox{\ctxboxsv}}\par\smallskip
+}
+
+\geometry{margin=2.5cm}
+
+\title{\bfseries Lab Assignment 1\\[4pt]
+\Large Vectors, Matrices, and Linear System Solving}
+\author{Maths II -- Bachelor's Degree in Video Game Design and Development\\CITM - UPC}
+\date{October 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{ctxbox}{Abstract}
+This assignment introduces a practical workflow for core linear algebra and numerical
+methods. Students implement custom \texttt{Vector} and \texttt{Matrix} classes, basic vector-space
+and matrix-space operations, and a linear-system solver based on Gaussian elimination,
+back substitution, and residual analysis. The work is validated both mathematically and
+computationally through an interactive app and automated tests. The goal is to connect
+formal mathematical definitions with robust C++ implementations, including dimension
+checks, tolerance handling, and pivoting strategies.
+\end{ctxbox}
+
+\section*{Exercise 1: Vector and Matrix Methods}
+
+\subsection*{a) Mathematical Summary}
+A vector in $\mathbb{R}^n$ supports:
+\begin{itemize}[leftmargin=*]
+    \item Addition: $(u+v)_i = u_i + v_i$
+    \item Subtraction: $(u-v)_i = u_i - v_i$
+    \item Scalar product by $\lambda \in \mathbb{R}$: $(\lambda u)_i = \lambda u_i$
+    \item Dot product: $u \cdot v = \sum_{i=0}^{n-1} u_i v_i$
+\end{itemize}
+
+A matrix in $\mathbb{R}^{m\times n}$ supports:
+\begin{itemize}[leftmargin=*]
+    \item Addition/subtraction with same shape
+    \item Scalar product by $\lambda$
+    \item Matrix-vector product:
+    $$
+    (Ax)_i = \sum_{j=0}^{n-1} a_{ij}x_j, \quad i=0,\dots,m-1
+    $$
+    \item Matrix-matrix product ($A\in\mathbb{R}^{m\times n}$, $B\in\mathbb{R}^{n\times p}$):
+    $$
+    (AB)_{ij} = \sum_{k=0}^{n-1} a_{ik}b_{kj}
+    $$
+\end{itemize}
+
+Identity matrix $I_n$ is defined by:
+$$
+(I_n)_{ij}=
+\begin{cases}
+1, & i=j \\
+0, & i\neq j
+\end{cases}
+$$
+
+Suggested pseudocode for matrix-vector product:
+\begin{verbatim}
+for i = 0..m-1:
+    sum = 0
+    for j = 0..n-1:
+        sum += A(i,j) * x[j]
+    y[i] = sum
+\end{verbatim}
+
+\subsection*{b) Implementation}
+Implement methods and operators declared in \texttt{LinAlgebra.hpp} and \texttt{LinAlgebra.cpp}:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Vector}: \texttt{operator+=}, \texttt{operator-=}, \texttt{operator*=}, \texttt{dot}
+    \item Free operators for vector unary/binary operations and scalar operations
+    \item \texttt{Matrix::identity}
+    \item \texttt{Matrix::operator()(row,col)} read/write
+    \item Matrix unary/binary operators, scalar operators, \texttt{Matrix*Vector}, \texttt{Matrix*Matrix}
+\end{itemize}
+
+\textbf{NOTE:} \textit{Always validate incompatible dimensions and invalid operations.}
+
+\subsection*{c) Report}
+\begin{enumerate}[leftmargin=*]
+    \item Which dimension checks are required for each vector/matrix operator?
+    \item Show one example where an invalid operation must throw an exception.
+    \item Compare the computational cost of $Ax$ versus $AB$ using the
+    operation counters (add, subtract, multiply, divide). Provide one concrete
+    example for each case and explain, from the counter results, which operation
+    grows faster when matrix size increases.
+    \item Open test \texttt{LinearAlgebraTest.AlgebraicExpressionExpApprox}
+    and inspect the implemented expression
+    $$
+    (I + A + \tfrac{1}{2}A^2)x + \tfrac{1}{4}(Bv).
+    $$
+    Report: (i) where this test is located, (ii) the numerical value obtained
+    for the result vector with the provided data, and (iii) how you printed
+    that value while running the test.
+\end{enumerate}
+
+\section*{Exercise 2: Elimination, Back Substitution, and Residual}
+
+\subsection*{a) Mathematical Summary}
+Given $Ax=b$ with $A\in\mathbb{R}^{n\times n}$, eliminate entries below each pivot.
+At elimination step $k$:
+$$
+m_{ik} = \frac{a^{(k)}_{ik}}{a^{(k)}_{kk}},\quad i=k+1,\dots,n-1
+$$
+$$
+a^{(k+1)}_{ij} = a^{(k)}_{ij} - m_{ik}a^{(k)}_{kj},\quad
+i=k+1,\dots,n-1,\ j=k+1,\dots,n-1
+$$
+$$
+b^{(k+1)}_i = b^{(k)}_i - m_{ik}b^{(k)}_k
+$$
+
+After elimination, solve $Ux=c$ by back substitution:
+$$
+x_i = \frac{c_i - \sum_{j=i+1}^{n-1} u_{ij}x_j}{u_{ii}},\quad i=n-1,\dots,0
+$$
+
+Residual quality metric:
+$$
+\text{relativeResidual}(A,x,b)=
+\begin{cases}
+\dfrac{\|Ax-b\|_2}{\|b\|_2}, & \|b\|_2 \neq 0 \\
+\|Ax-b\|_2, & \|b\|_2 = 0
+\end{cases}
+$$
+
+Suggested pseudocode (elimination core):
+\begin{verbatim}
+for k = 0..n-2:
+    if |A(k,k)| <= tol: return false
+    for i = k+1..n-1:
+        m = A(i,k) / A(k,k)
+        A(i,k) = m
+        for j = k+1..n-1:
+            A(i,j) -= m * A(k,j)
+        b[i] -= m * b[k]
+\end{verbatim}
+
+\subsection*{b) Implementation}
+Implement the next functions in \texttt{Solver.cpp}:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{gaussianElimination(Matrix\& A, Vector\& b, bool pivoting, double tolerance, Operations\& operations)}
+    \item \texttt{backSubstitution(const Matrix\& U, Vector\& c, double tolerance, Operations\& operations)}
+    \item \texttt{relativeResidual(const Matrix\& A, const Vector\& x, const Vector\& b)}
+\end{itemize}
+
+For this exercise, focus on: validating sizes, pivots, multipliers, and row updates.
+
+\subsection*{c) Report}
+\begin{enumerate}[leftmargin=*]
+    \item Why can a small pivot produce numerical instability?
+    \item Why does back substitution ignore values below the diagonal in $U$?
+    \item Explain why residual operations are not counted in solver operation counters.
+    \item Provide one test case where elimination should return \texttt{false}.
+\end{enumerate}
+
+\section*{Exercise 3: Partial Pivoting}
+
+\subsection*{a) Mathematical Summary}
+At each elimination column $k$, choose:
+$$
+p = \arg\max_{i\in\{k,\dots,n-1\}} |a_{ik}|
+$$
+If $|a_{pk}| \leq \text{tolerance}$, stop with failure. Otherwise, if $p\neq k$,
+swap rows $k$ and $p$ in both $A$ and $b$ before elimination updates.
+
+Pivoting reduces sensitivity to round-off and avoids dividing by very small pivots
+when a better row exists.
+
+Suggested pseudocode:
+\begin{verbatim}
+for k = 0..n-2:
+    p = argmax_i |A(i,k)| for i in [k, n-1]
+    if |A(p,k)| <= tol: return false
+    if p != k:
+        swap row k and row p in A
+        swap b[k] and b[p]
+    continue with elimination step
+\end{verbatim}
+
+\subsection*{b) Implementation}
+In \texttt{Solver.cpp}, extend \texttt{gaussianElimination}:
+\begin{itemize}[leftmargin=*]
+    \item If \texttt{pivoting == true}, choose and swap the pivot row.
+    \item Preserve behavior with \texttt{pivoting == false}.
+    \item Keep operation counters only for arithmetic operations, as specified.
+\end{itemize}
+
+\subsection*{c) Report}
+\begin{enumerate}[leftmargin=*]
+    \item Compare expected robustness with and without pivoting.
+    \item Give one system where no-pivot fails but pivoting succeeds.
+    \item Explain the additional computational overhead of pivot search.
+    \item How does pivot tolerance interact with pivoting decisions?
+\end{enumerate}
+
+\section*{How to Test the Implementation}
+
+Use the provided presets from the \texttt{lab1/} folder.
+
+\subsection*{Assignment implementation}
+\begin{verbatim}
+cmake --preset default-tests
+cmake --build --preset default-tests --parallel
+ctest --preset default-tests
+\end{verbatim}
+
+Also test interactively with the UI. First, compile the executable:
+\begin{verbatim}
+cmake --preset default
+cmake --build --preset default --parallel
+\end{verbatim}
+
+Then, run the app:
+\begin{verbatim}
+./build/bin/lab1
+\end{verbatim}
+
+Recommended testing strategy:
+\begin{itemize}[leftmargin=*]
+    \item Start with very small systems ($2\times2$, $3\times3$).
+    \item Add edge cases: incompatible dimensions, near-singular pivots, and zero right-hand side.
+    \item Verify exceptions and boolean failure paths.
+    \item Compare residual quality against expected thresholds in datasets.
+\end{itemize}
+
+\section*{Evaluation Criteria}
+Each exercise has a specific score:
+\begin{itemize}[leftmargin=*]
+    \item Exercise 1 (35\%): Implementation 25\% + Report 10\%
+    \item Exercise 2 (35\%): Implementation 25\% + Report 10\%
+    \item Exercise 3 (30\%): Implementation 20\% + Report 10\%
+\end{itemize}
+
+The Lab Assignment is optional. The final Lab grade is computed as the average between this
+assignment submission and the Lab exam grade.
+\begin{itemize}[leftmargin=*]
+    \item If the student does not submit this assignment, the final Lab grade is the exam grade.
+    \item If the student submits this assignment, the average between assignment and exam is used.
+    However, if the average is lower than the Lab exam grade, the Lab exam grade is kept
+    (so the student is not penalized).
+\end{itemize}
+
+Note: The code must work correctly. Otherwise, the grade of the corresponding
+exercise is zero. If plagiarism is detected, the final grade is zero.
+
+\section*{Academic Integrity and AI Use}
+Using AI tools (LLMs, code assistants) as tutoring support is allowed.
+Submitting generated code or report text as your own work without disclosure is
+not allowed.
+
+For submission:
+\begin{itemize}[leftmargin=*]
+    \item If AI support was used, include a short file \texttt{AI\_USAGE.md}
+    in the submitted zip.
+    \item In \texttt{AI\_USAGE.md}, specify: tool name, what it was used for,
+    and the final prompts that directly influenced the submitted code or report.
+    \item You must be able to explain and justify every submitted function and
+    test.
+\end{itemize}
+
+During review, the student will be asked for a brief explanation of selected code fragments or test decisions. If a submitted part cannot be explained by the
+student, that part will be considered invalid for grading.
+
+\section*{Submission}
+For submission, you may form groups of up to 3 people. Through ATENEA,
+use the format:
+\begin{center}
+\texttt{Surname1Name1\_Surname2Name2\_Surname3Name3\_Lab1.zip}
+\end{center}
+with the following content:
+\begin{itemize}[leftmargin=*]
+    \item Code files:
+    \begin{itemize}[leftmargin=*]
+        \item \texttt{LinAlgebra.cpp} with the implementation of classes \texttt{Vector} and \texttt{Matrix}.
+        \item \texttt{Solver.cpp} with the implementation of the solving methods \texttt{Solver}.
+    \end{itemize}
+    \item Report (PDF, 2--4 pages).
+\end{itemize}
+
+The submission will be evaluated jointly with the group members.
+The lab exam will be individual.
+
+\section*{Important Dates}
+% \vspace{2\baselineskip}
+\noindent\fbox{%
+\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+\centering\Large\bfseries
+Submission Deadline: October 27, 2026.\\
+Lab Practical Exam: October 29, 2026.
+}%
+}
+\end{document}
