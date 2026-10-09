@@ -1,9 +1,35 @@
 {
   "version": 5,
   "configurePresets": [
-    { "name": "default", "displayName": "Lab 1 (Release)", "binaryDir": "${sourceDir}/build" }
+    {
+      "name": "default",
+      "displayName": "Lab 1 (Release, assignment)",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "USE": "assignment"
+      }
+    },
+    {
+      "name": "solution",
+      "displayName": "Lab 1 (Release, solution)",
+      "binaryDir": "${sourceDir}/build-solution",
+      "cacheVariables": {
+        "USE": "solution"
+      }
+    }
   ],
   "buildPresets": [
-    { "name": "default", "configurePreset": "default", "configuration": "Release", "targets": ["lab1"] }
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "configuration": "Release",
+      "targets": ["lab1"]
+    },
+    {
+      "name": "solution",
+      "configurePreset": "solution",
+      "configuration": "Release",
+      "targets": ["lab1"]
+    }
   ]
 }
