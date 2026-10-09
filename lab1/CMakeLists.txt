@@ -11,13 +11,15 @@ set(USE "assignment" CACHE STRING "Implementation to use: assignment or solution
 set_property(CACHE USE PROPERTY STRINGS assignment solution)
 if(USE STREQUAL "assignment")
     set(LAB1_IMPL_DIR assignment)
+    set(LAB1_LINALG_SOURCE ${LAB1_IMPL_DIR}/LinAlgebra.cpp)
 elseif(USE STREQUAL "solution")
     set(LAB1_IMPL_DIR solution)
+    set(LAB1_LINALG_SOURCE ${LAB1_IMPL_DIR}/LinAlgebra.cpp)
 else()
     message(FATAL_ERROR "Invalid USE='${USE}'. Expected 'assignment' or 'solution'.")
 endif()
 
-add_library(labcore ${LAB1_IMPL_DIR}/Matrix.cpp ${LAB1_IMPL_DIR}/Solver.cpp
+add_library(labcore ${LAB1_LINALG_SOURCE} ${LAB1_IMPL_DIR}/Solver.cpp
     helpers/Numerics.cpp helpers/Dataset.cpp helpers/Validation.cpp)
 target_include_directories(labcore PUBLIC ${LAB1_IMPL_DIR} helpers)
 if(MSVC)
@@ -25,6 +27,17 @@ if(MSVC)
     target_compile_options(labcore PRIVATE /W4)
 else()
     target_compile_options(labcore PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+option(LAB1_BUILD_TESTS "Build unit tests for the selected implementation" OFF)
+if(LAB1_BUILD_TESTS)
+    enable_testing()
+    add_executable(lab1_tests
+        tests/main.cpp
+        tests/TestLinearAlgebra.cpp
+        tests/TestSolver.cpp)
+    target_link_libraries(lab1_tests PRIVATE labcore)
+    add_test(NAME lab1_tests COMMAND lab1_tests)
 endif()
 
 option(LAB1_BUILD_UI "Build the SDL3 / OpenGL / Dear ImGui interface" ON)

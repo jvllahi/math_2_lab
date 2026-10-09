@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Matrix.hpp"
+#include "LinAlgebra.hpp"
 
 namespace ui {
 // Draws a compact matrix table; returns true if any editable cell changed.

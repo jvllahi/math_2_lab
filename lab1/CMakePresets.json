@@ -16,6 +16,26 @@
       "cacheVariables": {
         "USE": "solution"
       }
+    },
+    {
+      "name": "default-tests",
+      "displayName": "Lab 1 tests (assignment)",
+      "binaryDir": "${sourceDir}/build-tests",
+      "cacheVariables": {
+        "USE": "assignment",
+        "LAB1_BUILD_UI": "OFF",
+        "LAB1_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "solution-tests",
+      "displayName": "Lab 1 tests (solution)",
+      "binaryDir": "${sourceDir}/build-solution-tests",
+      "cacheVariables": {
+        "USE": "solution",
+        "LAB1_BUILD_UI": "OFF",
+        "LAB1_BUILD_TESTS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -30,6 +50,34 @@
       "configurePreset": "solution",
       "configuration": "Release",
       "targets": ["lab1"]
+    },
+    {
+      "name": "default-tests",
+      "configurePreset": "default-tests",
+      "configuration": "Release",
+      "targets": ["lab1_tests"]
+    },
+    {
+      "name": "solution-tests",
+      "configurePreset": "solution-tests",
+      "configuration": "Release",
+      "targets": ["lab1_tests"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default-tests",
+      "configurePreset": "default-tests",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "solution-tests",
+      "configurePreset": "solution-tests",
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ]
 }

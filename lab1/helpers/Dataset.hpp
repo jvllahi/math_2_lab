@@ -1,5 +1,5 @@
 #pragma once
-#include "Matrix.hpp"
+#include "LinAlgebra.hpp"
 #include <filesystem>
 #include <string>
 

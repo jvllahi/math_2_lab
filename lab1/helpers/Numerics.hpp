@@ -1,5 +1,5 @@
 #pragma once
-#include "Matrix.hpp"
+#include "LinAlgebra.hpp"
 #include <stdexcept>
 
 // Computes the Euclidean norm (L2) of a vector.

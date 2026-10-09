@@ -13,8 +13,8 @@ static void expect(std::istream& file, const char* word) {
 static Vector readValues(std::istream& file, std::size_t count) {
     if (count > 4 * 1024 * 1024) throw std::runtime_error("Dataset too large");
     Vector result(count);
-    for (double& value : result)
-        if (!(file >> value) || !std::isfinite(value))
+    for (std::size_t i = 0; i < result.size(); ++i)
+        if (!(file >> result[i]) || !std::isfinite(result[i]))
             throw std::runtime_error("Incomplete or non-finite data");
     return result;
 }

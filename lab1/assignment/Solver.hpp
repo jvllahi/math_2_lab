@@ -1,5 +1,5 @@
 #pragma once
-#include "Matrix.hpp"
+#include "LinAlgebra.hpp"
 
 // Exercises 2 and 3. A and b are modified.
 // In both methods: require a non-empty square system and a compatible vector;

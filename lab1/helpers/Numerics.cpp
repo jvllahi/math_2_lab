@@ -17,7 +17,8 @@ void Matrix::swapRows(std::size_t first, std::size_t second) {
 
 double norm(const Vector& vector) {
     double result = 0;
-    for (double value : vector) result = std::hypot(result, value);
+    for (std::size_t i = 0; i < vector.size(); ++i)
+        result = std::hypot(result, vector[i]);
     return result;
 }
 
