@@ -1,6 +1,8 @@
 ﻿# Maths_II - 2026
 # Lab Assignment 1
 
+Repository: https://github.com/jvllahi/math_2_lab
+
 ## 1) Assignment
 
 Your implementation work is in the `assignment/` folder:
@@ -57,38 +59,7 @@ Exercise split:
 - Exercise 2: elimination + back substitution + residual.
 - Exercise 3: add partial pivoting behavior to elimination.
 
-## 2) Dataset `.lab` format (short reference)
-
-Each dataset file is plain text with fixed keywords. The loader expects this
-structure:
-
-```text
-LAB1 <version>
-name "<case name>"
-task <0..3>
-outcomes <withoutPivot> <withPivot>
-limits <pivotTolerance> <accuracy> <timeMinFactor> <timeMaxFactor>
-A <rows> <cols>
-<rows*cols values>
-B <rows> <cols>
-<rows*cols values>
-input <count>
-<count values>
-expected <count>
-<count values>
-end
-```
-
-Notes:
-
-- `task`: `0=Identity`, `1=MatrixVector`, `2=MatrixMatrix`, `3=Solve`.
-- `outcomes`: `0=Success`, `1=PivotFailure`, `2=InvalidInput`.
-- All numeric values must be finite.
-- Matrix dimensions are capped at `2048 x 2048`.
-- Vector value count is capped at `4*1024*1024`.
-- Data after `end` is treated as an error.
-
-## 3) Build and run
+## 2) Build and run
 
 From the `lab1/` folder:
 
@@ -134,7 +105,7 @@ ctest --preset default-tests
 progress indicator while implementing `assignment/LinAlgebra.cpp` and
 `assignment/Solver.cpp`.
 
-## 4) UI overview and workflow
+## 3) UI overview and workflow
 
 The window is split into two panels.
 
@@ -211,7 +182,7 @@ Use this sequence every time you validate a change:
     nearly singular system, or zero vector/right-hand side).
 10. Rebuild and retest after each code change.
 
-## 5) Academic integrity and AI use
+## 4) Academic integrity and AI use
 
 Using AI tools (LLMs, code assistants) as tutoring support is allowed.
 Submitting generated code or report text as your own work without disclosure is
