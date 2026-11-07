@@ -33,7 +33,8 @@ set(LAB_SOURCES ${LAB2_IMPL_DIR}/Matrix3x3.cpp ${LAB2_IMPL_DIR}/Quat.cpp
     ${LAB2_IMPL_DIR}/Matrix3x3.hpp ${LAB2_IMPL_DIR}/Quat.hpp
     algebra/LinAlgebra.cpp algebra/LinAlgebra.hpp
     helpers/Numerics.cpp helpers/Numerics.hpp
-    helpers/Geometry.cpp helpers/Geometry.hpp helpers/Validation.cpp helpers/Validation.hpp)
+    helpers/Geometry.cpp helpers/Geometry.hpp
+    helpers/Validation.cpp helpers/Validation.hpp)
 add_library(labcore ${LAB_SOURCES})
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${LAB_SOURCES})
 target_include_directories(labcore PUBLIC ${LAB2_IMPL_DIR} algebra helpers)
