@@ -125,40 +125,6 @@ While assignment TODOs remain, rotation tests are expected to fail; use them as
 a progress indicator. Supplied geometry tests should already pass.
 The test executable is `build-tests/bin/lab2_tests` (`.exe` on Windows).
 
-### Reference solution
-
-[solution/](solution/) implements the same public API. Separate build directories
-keep assignment and solution builds independent:
-
-```sh
-cmake --preset solution
-cmake --build --preset solution --parallel
-
-cmake --preset solution-tests
-cmake --build --preset solution-tests --parallel
-ctest --preset solution-tests
-```
-
-Run `./build-solution/bin/lab2` on macOS/Linux, or
-`.\build-solution\bin\lab2.exe` in Windows PowerShell.
-The solution test executable is `build-solution-tests/bin/lab2_tests`
-(`.exe` on Windows). CTest discovers and runs executables from their `bin/` folders.
-
-The default preset selects `USE=assignment`; the solution preset selects
-`USE=solution`. Custom configurations can also use
-`-DUSE=assignment` or `-DUSE=solution`.
-
-### Building the assignment handout
-
-With a LaTeX distribution installed, run from `lab2/docs/`:
-
-```sh
-pdflatex -interaction=nonstopmode -halt-on-error LabAssignment2.tex
-pdflatex -interaction=nonstopmode -halt-on-error LabAssignment2.tex
-```
-
-The output is `LabAssignment2.pdf`; the second pass resolves document references.
-
 ## 3) UI overview and workflow
 
 Use the **Operation** and **Example** controls above the two panels.
