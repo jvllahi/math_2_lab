@@ -21,6 +21,14 @@ else()
     message(FATAL_ERROR "Invalid USE='${USE}'. Expected 'assignment' or 'solution'.")
 endif()
 
+foreach(file LinAlgebra.cpp LinAlgebra.hpp)
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/algebra/${file}")
+        message(FATAL_ERROR
+            "Missing algebra/${file}. Copy your completed lab 1 LinAlgebra.cpp and "
+            "LinAlgebra.hpp into lab2/algebra/ before configuring. See README.md.")
+    endif()
+endforeach()
+
 set(LAB_SOURCES ${LAB2_IMPL_DIR}/Matrix3x3.cpp ${LAB2_IMPL_DIR}/Quat.cpp
     ${LAB2_IMPL_DIR}/Matrix3x3.hpp ${LAB2_IMPL_DIR}/Quat.hpp
     algebra/LinAlgebra.cpp algebra/LinAlgebra.hpp

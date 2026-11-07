@@ -78,8 +78,16 @@ part of the assignment; this handout does not provide solution code or pseudocod
 
 \section*{Building on Lab 1}
 
-\texttt{algebra/LinAlgebra.hpp} and \texttt{algebra/LinAlgebra.cpp} provide the
-generic \texttt{Vector}, \texttt{Matrix}, and \texttt{Operations} from lab 1.
+\textbf{Before configuring or building lab2, create a folder named
+\texttt{algebra/} inside \texttt{lab2/}.} Copy your own completed
+\texttt{LinAlgebra.hpp} and \texttt{LinAlgebra.cpp} from the first assignment
+into it, keeping their filenames and original public API. This folder is
+intentionally not distributed and is ignored by Git; do not use an instructor
+reference solution.
+
+Your copied files provide the generic \texttt{Vector}, \texttt{Matrix}, and
+\texttt{Operations} needed by lab2. They are required for both app and test
+builds, regardless of the implementation preset.
 \texttt{Vec3} contains a three-element \texttt{Vector}; \texttt{Matrix3x3}
 contains a $3\times3$ \texttt{Matrix}. Their fixed-size arithmetic operators
 reuse the generic implementation.
@@ -89,6 +97,8 @@ Euclidean norm, fixed-size construction and access, basic geometry, quaternion
 normalization, and independent validation. Use vector indices $0,1,2$ and
 \texttt{At(row,col)} for matrix entries. Default vectors and matrices are zero;
 \texttt{Matrix3x3::Identity()} constructs the identity.
+Do not copy duplicate implementations of the utilities already supplied in
+\texttt{helpers/Numerics.cpp}.
 
 \subsection*{Why use algebraic expressions?}
 
@@ -303,7 +313,8 @@ and verify the required output ranges and unit norms separately.
 
 \section*{How to Test the Implementation}
 
-Run the supplied presets from the \texttt{lab2/} folder:
+First copy your completed lab1 algebra into \texttt{lab2/algebra/}, then run
+the supplied presets from the \texttt{lab2/} folder:
 \begin{verbatim}
 cmake --preset default-tests
 cmake --build --preset default-tests --parallel
@@ -396,8 +407,9 @@ pattern below, omitting unused member slots for smaller groups:
 Include:
 \begin{itemize}[leftmargin=*]
     \item A buildable \texttt{lab2/} project preserving its relative folder
-    structure: completed assignment sources and headers, provided
-    \texttt{algebra/}, \texttt{helpers/}, and \texttt{app/}, tests, and CMake files.
+    structure: completed assignment sources and headers, your own previous
+    implementation in \texttt{algebra/}, provided \texttt{helpers/} and
+    \texttt{app/}, tests, and CMake files.
     Include any student-authored tests and necessary build changes.
     \item A PDF report of 2--4 pages, with a section for each exercise answering
     its report questions. Identify the group members and include numerical

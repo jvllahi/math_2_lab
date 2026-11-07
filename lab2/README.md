@@ -10,7 +10,7 @@ criteria, and submission requirements are in
 The LaTeX source is [docs/LabAssignment2.tex](docs/LabAssignment2.tex).
 
 This lab builds on the generic `Vector`, `Matrix`, and `Operations` from lab 1.
-Their implementation is provided unchanged in [algebra/](algebra/).
+You must supply your own completed implementation from the first assignment.
 The supplied [helpers/](helpers/) include lab 1 numerical utilities,
 fixed-size geometry, and independent UI validation.
 
@@ -18,6 +18,29 @@ fixed-size geometry, and independent UI validation.
 They retain the natural algebra operators from lab 1. Use vector indexing and
 `R.At(row, col)` for component access. Constructors and basic algebra are
 supplied; your work is in the rotation TODOs.
+
+### Bring your lab1 algebra
+
+Before configuring or building lab2:
+
+1. Create a folder named `algebra` inside `lab2/`.
+2. Copy your completed `LinAlgebra.cpp` and `LinAlgebra.hpp` from your lab1
+   assignment into that folder, keeping their original filenames and public API.
+
+The resulting layout must be:
+
+```text
+lab2/
+  algebra/
+    LinAlgebra.cpp
+    LinAlgebra.hpp
+```
+
+This folder is intentionally not distributed and is ignored by Git. Use your own
+previous work, not an instructor reference solution. The same local algebra is
+required for both app and test builds, whichever implementation preset you select.
+Matrix allocation, row swaps, and the vector norm are already supplied in
+`helpers/Numerics.cpp`; do not copy duplicate implementations of these utilities.
 
 The function contracts are defined in:
 
@@ -57,7 +80,8 @@ The handout explains the conventions and the required edge cases.
    install Visual Studio with "Desktop development with C++"; on macOS,
    install the Xcode tools; on Linux, install the build tools and the
    OpenGL and SDL3 development dependencies.
-3. Open a terminal in the `lab2/` folder and run:
+3. Create `lab2/algebra/` and copy your previous solution into it as described above.
+4. Open a terminal in the `lab2/` folder and run:
 
 ```sh
 cmake --preset default
