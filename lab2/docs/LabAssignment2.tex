@@ -1,0 +1,424 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\renewcommand{\labelenumi}{(\alph{enumi})}
+\definecolor{panel}{gray}{0.94}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\vect}[1]{\bm{#1}}
+
+\newsavebox{\ctxboxsv}
+\newenvironment{ctxbox}[1]{%
+  \par\smallskip\noindent
+  \begin{lrbox}{\ctxboxsv}
+  \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+  \textbf{#1}\par\smallskip
+}{%
+  \end{minipage}
+  \end{lrbox}%
+  \noindent\colorbox{panel}{\usebox{\ctxboxsv}}\par\smallskip
+}
+
+\title{\bfseries Lab Assignment 2\\[4pt]
+\Large Three-Dimensional Rotations and Their Representations}
+\author{Maths II -- Bachelor's Degree in Video Game Design and Development\\CITM - UPC}
+\date{Autumn 2026}
+
+\begin{document}
+\maketitle
+
+\begin{ctxbox}{Abstract}
+This assignment extends the vector and matrix algebra developed in lab 1 to
+three-dimensional rotations. Students implement conversions between rotation
+matrices, axis-angle descriptions, intrinsic Euler ZYX angles, and quaternions.
+They also rotate vectors and measure the arithmetic cost of selected operations.
+The goal is to connect geometric definitions with reliable C++ implementations,
+including representation ambiguities, singular cases, and input validation.
+An interactive app and automated tests provide complementary validation.
+\end{ctxbox}
+
+\textbf{Repository:} \url{https://github.com/jvllahi/math_2_lab}
+
+\section*{Scope and Conventions}
+
+All work is in the \texttt{lab2/} project. Implement the TODO methods in
+\texttt{assignment/Matrix3x3.cpp} and \texttt{assignment/Quat.cpp}; their headers
+define the public contracts. The generic algebra and supplied helper functions
+are not new student exercises.
+
+\begin{itemize}[leftmargin=*]
+    \item Rotations are active and right-handed, acting on column vectors.
+    Matrix entries are stored in row-major order.
+    \item Function angles are in radians; the app displays and accepts degrees.
+    \item Euler angles follow intrinsic ZYX, with yaw about Z, pitch about the
+    local Y axis, and roll about the local X axis.
+    \item Quaternion components are ordered \texttt{(s,x,y,z)}: scalar first.
+    \item Rotation checks use absolute tolerance $10^{-6}$ for orthogonality
+    and determinant. The app accepts numerical output error up to $5\cdot10^{-6}$;
+    automated tests also check stricter tolerances for selected cases.
+\end{itemize}
+
+The following equations describe the mathematical objects and conventions.
+Deriving the conversion algorithms and handling their numerical edge cases are
+part of the assignment; this handout does not provide solution code or pseudocode.
+
+\section*{Building on Lab 1}
+
+\texttt{algebra/LinAlgebra.hpp} and \texttt{algebra/LinAlgebra.cpp} provide the
+generic \texttt{Vector}, \texttt{Matrix}, and \texttt{Operations} from lab 1.
+\texttt{Vec3} contains a three-element \texttt{Vector}; \texttt{Matrix3x3}
+contains a $3\times3$ \texttt{Matrix}. Their fixed-size arithmetic operators
+reuse the generic implementation.
+
+The supplied \texttt{helpers/} include matrix allocation and row swaps, the
+Euclidean norm, fixed-size construction and access, basic geometry, quaternion
+normalization, and independent validation. Use vector indices $0,1,2$ and
+\texttt{At(row,col)} for matrix entries. Default vectors and matrices are zero;
+\texttt{Matrix3x3::Identity()} constructs the identity.
+
+\subsection*{Why use algebraic expressions?}
+
+Before writing component-by-component loops, consider whether the matrix and
+vector operators from lab 1 can express the algebra you need. They are also
+available for \texttt{Matrix3x3} and \texttt{Vec3}, with the same natural syntax.
+
+Reusing these operations can keep your code closer to the mathematical notation,
+reduce repetitive arithmetic, and make it easier to read and check. Choosing how
+to apply them to the rotation methods is part of the assignment.
+
+\section*{Exercise 1: Rotation Matrices and Axis-Angle}
+
+\subsection*{a) Mathematical Summary}
+
+A proper rotation matrix belongs to
+\[
+SO(3)=\{R\in\R^{3\times3}:R^{\mathsf T}R=I,\ \det R=1\}.
+\]
+Its columns form a right-handed orthonormal basis. A rotated vector is
+$\vect{v}'=R\vect{v}$, and rotation preserves lengths and dot products.
+Orthogonality alone also permits reflections, which have determinant $-1$.
+
+An axis-angle description consists of a unit axis $\vect{u}$ and a physical
+rotation angle $\theta$. Rodrigues' geometric relation is
+\[
+R\vect{v}
+=\vect{v}\cos\theta
++(\vect{u}\times\vect{v})\sin\theta
++\vect{u}(\vect{u}\cdot\vect{v})(1-\cos\theta).
+\]
+The axis is unchanged by the rotation. Equivalent descriptions are not unique:
+angles can differ by full turns, and reversing both axis and angle describes
+the same rotation. For output, use a unit axis and $\theta\in[0,\pi]$.
+The identity has no unique axis; at a half-turn, opposite axes are equivalent.
+These ambiguities must not be confused with incorrect rotations.
+
+\subsection*{b) Implementation}
+
+Implement in \texttt{assignment/Matrix3x3.cpp}:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{IsRotation}: return whether the matrix is a proper rotation
+    within the specified tolerance. Non-finite entries return \texttt{false}.
+    \item \texttt{RotationAxisAngle}: construct a rotation from an axis and
+    an angle. Normalize the finite, nonzero axis; reject a zero axis even when
+    the angle is zero.
+    \item \texttt{ToAxisAngle}: extract a unit axis and an angle in $[0,\pi]$.
+    Handle identity, half-turns, and nearby angles reliably.
+    \item \texttt{Rotate}: rotate a finite vector using a valid rotation
+    matrix and accumulate the scalar arithmetic counts of the product kernel.
+\end{itemize}
+
+Except for the boolean \texttt{IsRotation} check, invalid matrix, axis, vector,
+or angle inputs must produce \texttt{std::invalid\_argument}. Choose a
+deterministic unit axis for identity output and explain the choice.
+
+\subsection*{c) Report}
+\begin{enumerate}[leftmargin=*]
+    \item Why must a proper rotation satisfy both orthogonality and determinant
+    $+1$? Provide a matrix that satisfies one condition but is not a rotation.
+    \item Explain geometrically why rotation preserves vector length and leaves
+    its axis unchanged. Show numerical evidence from one test.
+    \item Why are identity and half-turn rotations special for axis-angle
+    extraction? Explain the ambiguities and how your implementation handles them.
+    \item Report one normal and one near-half-turn round trip. State the input,
+    the returned parameters, and the reconstructed matrix error.
+\end{enumerate}
+
+\section*{Exercise 2: Intrinsic Euler ZYX Angles}
+
+\subsection*{a) Mathematical Summary}
+
+Euler angles describe orientation using three elementary rotations. This
+assignment fixes the convention
+\[
+R(\psi,\theta,\phi)=R_z(\psi)R_y(\theta)R_x(\phi),
+\]
+where $\psi$ is yaw, $\theta$ is pitch, and $\phi$ is roll. The matrices
+$R_x$, $R_y$, and $R_z$ are right-handed rotations about the corresponding
+coordinate axes. Matrix multiplication is not generally commutative, so the
+axis order and the active column-vector convention matter.
+
+Different Euler triples can represent the same orientation. Canonical outputs
+must satisfy
+\[
+\psi,\phi\in[-\pi,\pi],\qquad
+\theta\in[-\pi/2,\pi/2].
+\]
+At $\theta=\pm\pi/2$, two rotational degrees of freedom become coupled:
+this is gimbal lock. A unique yaw/roll pair cannot be recovered. For a
+reproducible output convention in this assignment, set roll to zero at exact
+gimbal lock and return an equivalent orientation.
+
+\subsection*{b) Implementation}
+
+Implement in \texttt{assignment/Matrix3x3.cpp}:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{FromEulerZYX}: construct the specified orientation from
+    finite yaw, pitch, and roll inputs in radians.
+    \item \texttt{ToEulerZYX}: extract canonical Euler angles from a valid
+    rotation matrix, including both signs of gimbal lock and nearby cases.
+\end{itemize}
+
+Reject non-finite input angles or non-rotation matrices with
+\texttt{std::invalid\_argument}. Validate equivalent orientations rather than
+requiring an extracted Euler triple to equal a noncanonical input triple.
+
+\subsection*{c) Report}
+\begin{enumerate}[leftmargin=*]
+    \item Explain the chosen intrinsic ZYX convention. Why would changing the
+    multiplication order generally change the orientation?
+    \item What is lost at gimbal lock? Explain why different yaw/roll pairs can
+    describe the same orientation, and state your output convention.
+    \item Compare a normal round trip with pitch at $+90^\circ$, $-90^\circ$,
+    and close to either value. Include reconstructed matrix errors.
+    \item Give two distinct Euler triples representing the same orientation.
+    Explain why comparing angles directly is not a sufficient correctness test.
+\end{enumerate}
+
+\section*{Exercise 3: Quaternions and Rotation}
+
+\subsection*{a) Mathematical Summary}
+
+A quaternion has a scalar part and a three-dimensional vector part:
+\[
+q=s+x\,i+y\,j+z\,k=(s,\vect{u}),\qquad
+\vect{u}=(x,y,z).
+\]
+The units satisfy $i^2=j^2=k^2=ijk=-1$. For
+$p=(s,\vect{u})$ and $q=(t,\vect{w})$, the Hamilton product is defined by
+\[
+pq=(st-\vect{u}\cdot\vect{w},\
+s\vect{w}+t\vect{u}+\vect{u}\times\vect{w}).
+\]
+It is associative but not generally commutative.
+
+The norm and conjugate are
+\[
+\|q\|=\sqrt{s^2+x^2+y^2+z^2},\qquad
+q^*=(s,-x,-y,-z).
+\]
+Unit quaternions encode rotations. The axis-angle representation corresponds to
+\[
+q=\left(\cos\frac{\theta}{2},\
+\vect{u}\sin\frac{\theta}{2}\right),
+\qquad \|\vect{u}\|=1.
+\]
+For a unit quaternion, the vector part of $q(0,\vect{v})q^*$ is the rotated
+vector. The quaternions $q$ and $-q$ represent the same rotation.
+The product $q_1q_2$ composes rotations with $q_2$ acting first.
+
+\subsection*{b) Implementation}
+
+Implement in \texttt{assignment/Quat.cpp}:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{Multiply}: compute the Hamilton product without normalizing
+    either operand, and accumulate scalar arithmetic counts. Finite zero
+    quaternions are valid operands for this algebraic operation.
+    \item \texttt{Rotate}: normalize the quaternion, rotate a finite vector,
+    and accumulate only the rotation kernel's scalar arithmetic counts.
+    \item \texttt{FromAxisAngle} and \texttt{ToAxisAngle}: convert between
+    unit quaternions and axis-angle descriptions with the output conventions
+    of exercise 1.
+    \item \texttt{FromMatrix3x3} and \texttt{ToMatrix3x3}: convert between
+    unit quaternions and proper rotation matrices.
+\end{itemize}
+
+\texttt{Normalized} is supplied in the helpers. Rotation and conversion methods
+must normalize finite, nonzero quaternion inputs; zero quaternions do not
+describe rotations. Axis inputs must be finite and nonzero; angle inputs must
+be finite. Invalid inputs throw \texttt{std::invalid\_argument}.
+Matrix-to-quaternion and axis-to-quaternion outputs must have unit norm.
+Axis-angle extraction must treat $q$ and $-q$ consistently.
+
+\subsection*{c) Report}
+\begin{enumerate}[leftmargin=*]
+    \item Explain the role of the half-angle and why $q$ and $-q$ describe
+    the same rotation. Demonstrate the latter numerically.
+    \item Give a pair of quaternion rotations whose composition changes when
+    the operands are swapped. Relate the result to matrix composition.
+    \item Why is normalization appropriate for rotation/conversion methods,
+    but not for an arbitrary Hamilton product? What happens with a zero quaternion?
+    \item Compare rotating the same vector using a matrix and a quaternion.
+    Report output error and each arithmetic count, and justify any difference
+    from the app's advisory standard counts.
+    \item Demonstrate a matrix--quaternion--matrix round trip for a normal
+    rotation and a half-turn. Explain why quaternion components alone are not
+    a sufficient equivalence check.
+\end{enumerate}
+
+\section*{Validation and Arithmetic Counts}
+
+Use \texttt{Operations} to accumulate scalar additions, subtractions,
+multiplications, and divisions in \texttt{Matrix3x3::Rotate},
+\texttt{Quat::Multiply}, and \texttt{Quat::Rotate}. Do not reset a counter
+provided by the caller.
+
+Exclude index arithmetic, comparisons, control flow, input validation,
+normalization, and independent reference calculations. The ordinary overloaded
+algebra operators do not update these counters automatically. Account for the
+arithmetic actually performed by the generic operations you call, including
+additions to a zero accumulator where applicable.
+
+The app's count comparison is advisory, separate from numerical correctness.
+Explain your counting model and any alternative algorithm in the report.
+Elapsed time is informational, not a standalone proof of correctness.
+
+Use round trips and geometric invariants to compare orientations. A small
+error in recovered parameters is not always meaningful near a non-unique
+representation. Report the error in reconstructed matrices or rotated vectors,
+and verify the required output ranges and unit norms separately.
+
+\section*{How to Test the Implementation}
+
+Run the supplied presets from the \texttt{lab2/} folder:
+\begin{verbatim}
+cmake --preset default-tests
+cmake --build --preset default-tests --parallel
+ctest --preset default-tests
+\end{verbatim}
+
+The test executable is \texttt{build-tests/bin/lab2\_tests}, with
+\texttt{.exe} on Windows. Tests need no display. Unfinished rotation TODOs are
+expected to fail; the supplied geometry tests should already pass.
+Add focused tests for your own edge cases rather than relying only on the
+provided examples.
+
+Also build and run the interactive app:
+\begin{verbatim}
+cmake --preset default
+cmake --build --preset default --parallel
+./build/bin/lab2
+\end{verbatim}
+On Windows PowerShell, run \verb|.\build\bin\lab2.exe| instead.
+Use \textbf{Operation}, \textbf{Example}, \textbf{Load example}, and
+\textbf{Run operation}. Check status and details, numerical output, error,
+and applicable counts. A rejected invalid input can correctly produce no
+numerical output. See \texttt{README.md} for the full UI workflow.
+
+\begin{center}
+\begin{tabular}{L{0.30\linewidth}L{0.60\linewidth}}
+\toprule
+\textbf{Case} & \textbf{What to verify}\\
+\midrule
+Normal rotations & Known orientations, vector length, valid matrix, and round trips.\\
+Identity & Equivalent identity orientation and valid, deterministic output parameters.\\
+Half-turn and nearby angles & Stable axis-angle and quaternion conversions with unit outputs.\\
+Gimbal lock and nearby pitch & Both signs, canonical Euler ranges, and equivalent reconstructed rotation.\\
+Quaternion sign and scale & Equivalent rotation for opposite signs and nonzero scaled inputs.\\
+Invalid inputs & Reflection/non-rotation checks; zero axis or quaternion, and non-finite values rejected where required.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Record reproducible inputs, expected properties, actual results, and tolerances.
+Include automated test results and at least one student-authored edge case for
+each exercise in your report.
+
+\section*{Evaluation Criteria}
+
+The same weighting structure as lab 1 applies:
+\begin{itemize}[leftmargin=*]
+    \item Exercise 1 (35\%): Implementation 25\% + Report 10\%.
+    \item Exercise 2 (35\%): Implementation 25\% + Report 10\%.
+    \item Exercise 3 (30\%): Implementation 20\% + Report 10\%.
+\end{itemize}
+
+Evaluation considers mathematical correctness, adherence to the API contracts,
+singular-case handling, validation, justified arithmetic counts, reproducible
+tests, and the explanations requested in each report section.
+
+The assignment is optional. If it is not submitted, the final lab grade is the
+lab exam grade. If it is submitted, the final lab grade is the greater of the
+exam grade and the average of the assignment and exam grades, so submission
+does not penalize the student.
+
+The code must work correctly; otherwise, the corresponding exercise receives
+zero. If plagiarism is detected, the final grade is zero.
+
+\section*{Academic Integrity and AI Use}
+
+Using AI tools (LLMs, code assistants) as tutoring support is allowed.
+Submitting generated code or report text as your own work without disclosure
+is not allowed.
+
+\begin{itemize}[leftmargin=*]
+    \item If AI support was used, include \texttt{AI\_USAGE.md} in the submitted zip.
+    \item List the tool name, what it was used for, and the final prompts that
+    directly influenced the submitted code or report.
+    \item You must be able to explain and justify every submitted function and test.
+\end{itemize}
+
+During review, students will be asked to explain selected code fragments or test
+decisions. A submitted part that a student cannot explain will be considered
+invalid for grading.
+
+\section*{Submission}
+
+Groups may contain up to three people. Submit through ATENEA using the naming
+pattern below, omitting unused member slots for smaller groups:
+\begin{center}
+\small\texttt{Surname1Name1\_Surname2Name2\_Surname3Name3\_Lab2.zip}
+\end{center}
+
+Include:
+\begin{itemize}[leftmargin=*]
+    \item A buildable \texttt{lab2/} project preserving its relative folder
+    structure: completed assignment sources and headers, provided
+    \texttt{algebra/}, \texttt{helpers/}, and \texttt{app/}, tests, and CMake files.
+    Include any student-authored tests and necessary build changes.
+    \item A PDF report of 2--4 pages, with a section for each exercise answering
+    its report questions. Identify the group members and include numerical
+    evidence, count comparisons, test results, and conclusions.
+    \item \texttt{AI\_USAGE.md}, if applicable.
+\end{itemize}
+
+Do not include the provided \texttt{solution/} folder, build directories,
+executables, or downloaded dependencies. Your submitted implementation must
+build with the default assignment preset from a fresh project directory.
+The submission is evaluated jointly with the group members; the lab exam is
+individual.
+
+\section*{Important Dates}
+\noindent\fbox{%
+\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+\centering\bfseries
+Lab 2 Assignment Submission Deadline: To be announced.\\
+Term Exam: To be announced.\\
+Lab Practical Exam: To be announced.
+}%
+}
+
+\end{document}
