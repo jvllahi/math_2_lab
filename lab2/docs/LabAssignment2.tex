@@ -34,17 +34,17 @@
 }
 
 \title{\bfseries Lab Assignment 2\\[4pt]
-\Large Three-Dimensional Rotations and Their Representations}
+\Large 3D Rotations and Their Representations}
 \author{Maths II -- Bachelor's Degree in Video Game Design and Development\\CITM - UPC}
-\date{Autumn 2026}
+\date{November 2026}
 
 \begin{document}
 \maketitle
 
 \begin{ctxbox}{Abstract}
 This assignment extends the vector and matrix algebra developed in lab 1 to
-three-dimensional rotations. Students implement conversions between rotation
-matrices, axis-angle descriptions, intrinsic Euler ZYX angles, and quaternions.
+3D rotations. Students implement conversions between rotation
+matrices, axis-angle descriptions, Euler ZYX angles, and quaternions.
 They also rotate vectors and measure the arithmetic cost of selected operations.
 The goal is to connect geometric definitions with reliable C++ implementations,
 including representation ambiguities, singular cases, and input validation.
@@ -64,12 +64,12 @@ are not new student exercises.
     \item Rotations are active and right-handed, acting on column vectors.
     Matrix entries are stored in row-major order.
     \item Function angles are in radians; the app displays and accepts degrees.
-    \item Euler angles follow intrinsic ZYX, with yaw about Z, pitch about the
+    \item Euler angles follow ZYX, with yaw about Z, pitch about the
     local Y axis, and roll about the local X axis.
     \item Quaternion components are ordered \texttt{(s,x,y,z)}: scalar first.
-    \item Rotation checks use absolute tolerance $10^{-6}$ for orthogonality
-    and determinant. The app accepts numerical output error up to $5\cdot10^{-6}$;
-    automated tests also check stricter tolerances for selected cases.
+    % \item Rotation checks use absolute tolerance $10^{-6}$ for orthogonality
+    % and determinant. The app accepts numerical output error up to $5\cdot10^{-6}$;
+    % automated tests also check stricter tolerances for selected cases.
 \end{itemize}
 
 The following equations describe the mathematical objects and conventions.
@@ -157,8 +157,8 @@ deterministic unit axis for identity output and explain the choice.
 
 \subsection*{c) Report}
 \begin{enumerate}[leftmargin=*]
-    \item Why must a proper rotation satisfy both orthogonality and determinant
-    $+1$? Provide a matrix that satisfies one condition but is not a rotation.
+    % \item Why must a proper rotation satisfy both orthogonality and determinant
+    % $+1$? Provide a matrix that satisfies one condition but is not a rotation.
     \item Explain geometrically why rotation preserves vector length and leaves
     its axis unchanged. Show numerical evidence from one test.
     \item Why are identity and half-turn rotations special for axis-angle
@@ -167,7 +167,7 @@ deterministic unit axis for identity output and explain the choice.
     the returned parameters, and the reconstructed matrix error.
 \end{enumerate}
 
-\section*{Exercise 2: Intrinsic Euler ZYX Angles}
+\section*{Exercise 2: Euler ZYX Angles}
 
 \subsection*{a) Mathematical Summary}
 
@@ -188,7 +188,7 @@ must satisfy
 \theta\in[-\pi/2,\pi/2].
 \]
 At $\theta=\pm\pi/2$, two rotational degrees of freedom become coupled:
-this is gimbal lock. A unique yaw/roll pair cannot be recovered. For a
+this is \textbf{gimbal lock}. A unique yaw/roll pair cannot be recovered. For a
 reproducible output convention in this assignment, set roll to zero at exact
 gimbal lock and return an equivalent orientation.
 
@@ -208,8 +208,8 @@ requiring an extracted Euler triple to equal a noncanonical input triple.
 
 \subsection*{c) Report}
 \begin{enumerate}[leftmargin=*]
-    \item Explain the chosen intrinsic ZYX convention. Why would changing the
-    multiplication order generally change the orientation?
+    % \item Explain the chosen ZYX convention. Why would changing the
+    % multiplication order generally change the orientation?
     \item What is lost at gimbal lock? Explain why different yaw/roll pairs can
     describe the same orientation, and state your output convention.
     \item Compare a normal round trip with pitch at $+90^\circ$, $-90^\circ$,
@@ -222,7 +222,7 @@ requiring an extracted Euler triple to equal a noncanonical input triple.
 
 \subsection*{a) Mathematical Summary}
 
-A quaternion has a scalar part and a three-dimensional vector part:
+A quaternion has a scalar part and a 3D vector part:
 \[
 q=s+x\,i+y\,j+z\,k=(s,\vect{u}),\qquad
 \vect{u}=(x,y,z).
@@ -282,34 +282,34 @@ Axis-angle extraction must treat $q$ and $-q$ consistently.
     \item Why is normalization appropriate for rotation/conversion methods,
     but not for an arbitrary Hamilton product? What happens with a zero quaternion?
     \item Compare rotating the same vector using a matrix and a quaternion.
-    Report output error and each arithmetic count, and justify any difference
-    from the app's advisory standard counts.
-    \item Demonstrate a matrix--quaternion--matrix round trip for a normal
-    rotation and a half-turn. Explain why quaternion components alone are not
-    a sufficient equivalence check.
+    % Report output error and each arithmetic count, and justify any difference
+    % from the app's advisory standard counts.
+    % \item Demonstrate a matrix--quaternion--matrix round trip for a normal
+    % rotation and a half-turn. Explain why quaternion components alone are not
+    % a sufficient equivalence check.
 \end{enumerate}
 
-\section*{Validation and Arithmetic Counts}
+% \section*{Validation and Arithmetic Counts}
 
-Use \texttt{Operations} to accumulate scalar additions, subtractions,
-multiplications, and divisions in \texttt{Matrix3x3::Rotate},
-\texttt{Quat::Multiply}, and \texttt{Quat::Rotate}. Do not reset a counter
-provided by the caller.
+% Use \texttt{Operations} to accumulate scalar additions, subtractions,
+% multiplications, and divisions in \texttt{Matrix3x3::Rotate},
+% \texttt{Quat::Multiply}, and \texttt{Quat::Rotate}. Do not reset a counter
+% provided by the caller.
 
-Exclude index arithmetic, comparisons, control flow, input validation,
-normalization, and independent reference calculations. The ordinary overloaded
-algebra operators do not update these counters automatically. Account for the
-arithmetic actually performed by the generic operations you call, including
-additions to a zero accumulator where applicable.
+% Exclude index arithmetic, comparisons, control flow, input validation,
+% normalization, and independent reference calculations. The ordinary overloaded
+% algebra operators do not update these counters automatically. Account for the
+% arithmetic actually performed by the generic operations you call, including
+% additions to a zero accumulator where applicable.
 
-The app's count comparison is advisory, separate from numerical correctness.
-Explain your counting model and any alternative algorithm in the report.
-Elapsed time is informational, not a standalone proof of correctness.
+% The app's count comparison is advisory, separate from numerical correctness.
+% Explain your counting model and any alternative algorithm in the report.
+% Elapsed time is informational, not a standalone proof of correctness.
 
-Use round trips and geometric invariants to compare orientations. A small
-error in recovered parameters is not always meaningful near a non-unique
-representation. Report the error in reconstructed matrices or rotated vectors,
-and verify the required output ranges and unit norms separately.
+% Use round trips and geometric invariants to compare orientations. A small
+% error in recovered parameters is not always meaningful near a non-unique
+% representation. Report the error in reconstructed matrices or rotated vectors,
+% and verify the required output ranges and unit norms separately.
 
 \section*{How to Test the Implementation}
 
@@ -333,9 +333,17 @@ cmake --preset default
 cmake --build --preset default --parallel
 ./build/bin/lab2
 \end{verbatim}
+
 On Windows PowerShell, run \verb|.\build\bin\lab2.exe| instead.
-Use \textbf{Operation}, \textbf{Example}, \textbf{Load example}, and
-\textbf{Run operation}. Check status and details, numerical output, error,
+Use:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Operation}: Select the operation to perform.
+\item \textbf{Example}: Choose a predefined example input.
+\item \textbf{Load example}: Load the selected example into the app.
+\item \textbf{Run operation}: Execute the chosen operation with the current input.
+\end{itemize}
+
+Check status and details, numerical output, error,
 and applicable counts. A rejected invalid input can correctly produce no
 numerical output. See \texttt{README.md} for the full UI workflow.
 
@@ -367,34 +375,35 @@ The same weighting structure as lab 1 applies:
     \item Exercise 3 (30\%): Implementation 20\% + Report 10\%.
 \end{itemize}
 
-Evaluation considers mathematical correctness, adherence to the API contracts,
-singular-case handling, validation, justified arithmetic counts, reproducible
-tests, and the explanations requested in each report section.
-
-The assignment is optional. If it is not submitted, the final lab grade is the
-lab exam grade. If it is submitted, the final lab grade is the greater of the
-exam grade and the average of the assignment and exam grades, so submission
-does not penalize the student.
-
-The code must work correctly; otherwise, the corresponding exercise receives
-zero. If plagiarism is detected, the final grade is zero.
-
-\section*{Academic Integrity and AI Use}
-
-Using AI tools (LLMs, code assistants) as tutoring support is allowed.
-Submitting generated code or report text as your own work without disclosure
-is not allowed.
-
+The Lab Assignment is optional. The final Lab grade is computed as the average between this
+assignment submission and the Lab exam grade.
 \begin{itemize}[leftmargin=*]
-    \item If AI support was used, include \texttt{AI\_USAGE.md} in the submitted zip.
-    \item List the tool name, what it was used for, and the final prompts that
-    directly influenced the submitted code or report.
-    \item You must be able to explain and justify every submitted function and test.
+    \item If the student does not submit this assignment, the final Lab grade is the exam grade.
+    \item If the student submits this assignment, the average between assignment and exam is used.
+    However, if the average is lower than the Lab exam grade, the Lab exam grade is kept
+    (so the student is not penalized).
 \end{itemize}
 
-During review, students will be asked to explain selected code fragments or test
-decisions. A submitted part that a student cannot explain will be considered
-invalid for grading.
+Note: The code must work correctly. Otherwise, the grade of the corresponding
+exercise is zero. If plagiarism is detected, the final grade is zero.
+
+\section*{Academic Integrity and AI Use}
+Using AI tools (LLMs, code assistants) as tutoring support is allowed.
+Submitting generated code or report text as your own work without disclosure is
+not allowed.
+
+For submission:
+\begin{itemize}[leftmargin=*]
+    \item If AI support was used, include a short file \texttt{AI\_USAGE.md}
+    in the submitted zip.
+    \item In \texttt{AI\_USAGE.md}, specify: tool name, what it was used for,
+    and the final prompts that directly influenced the submitted code or report.
+    \item You must be able to explain and justify every submitted function and
+    test.
+\end{itemize}
+
+During review, the student will be asked for a brief explanation of selected code fragments or test decisions. If a submitted part cannot be explained by the
+student, that part will be considered invalid for grading.
 
 \section*{Submission}
 
@@ -406,20 +415,16 @@ pattern below, omitting unused member slots for smaller groups:
 
 Include:
 \begin{itemize}[leftmargin=*]
-    \item A buildable \texttt{lab2/} project preserving its relative folder
-    structure: completed assignment sources and headers, your own previous
-    implementation in \texttt{algebra/}, provided \texttt{helpers/} and
-    \texttt{app/}, tests, and CMake files.
-    Include any student-authored tests and necessary build changes.
-    \item A PDF report of 2--4 pages, with a section for each exercise answering
-    its report questions. Identify the group members and include numerical
-    evidence, count comparisons, test results, and conclusions.
+    \item Code files:
+    \begin{itemize}[leftmargin=*]
+        \item \texttt{Matrix3x3.cpp} with the implementation of the methods required for rotations of 3x3 matrices.
+        \item \texttt{Quat.cpp} with the implementation of the methods required by quaternions.
+    \end{itemize}
+    \item Report (PDF, 2--4 pages).
     \item \texttt{AI\_USAGE.md}, if applicable.
 \end{itemize}
 
-Do not include the provided \texttt{solution/} folder, build directories,
-executables, or downloaded dependencies. Your submitted implementation must
-build with the default assignment preset from a fresh project directory.
+Your submitted implementation must compile and run correctly.
 The submission is evaluated jointly with the group members; the lab exam is
 individual.
 
@@ -427,9 +432,9 @@ individual.
 \noindent\fbox{%
 \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
 \centering\bfseries
-Lab 2 Assignment Submission Deadline: To be announced.\\
-Term Exam: To be announced.\\
-Lab Practical Exam: To be announced.
+Lab 2 Assignment Submission Deadline: November 30th, 2026.\\
+% Term Exam: To be announced.\\
+Lab Practical Exam: December 3rd, 2026.
 }%
 }
 
